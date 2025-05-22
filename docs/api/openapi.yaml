@@ -1,0 +1,29 @@
+version: 1.0.0
+info:
+  title: Open Horizon Exchange API
+  description: API documentation for the Open Horizon Exchange Server
+  version: 1.0.0
+servers:
+- url: https://exchange.example.com
+  description: Open Horizon Exchange Server
+paths:
+  /orgs:
+    get:
+      summary: List organizations
+      description: Get a list of all organizations
+      responses:
+        '200':
+          description: List of organizations
+  /orgs/{orgid}:
+    get:
+      summary: Get organization
+      description: Get details of a specific organization
+      parameters:
+      - name: orgid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Organization details
