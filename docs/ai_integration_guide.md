@@ -1175,13 +1175,17 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install required packages
 pip install jupyter
-pip install openhorizon-agentic-ai
+pip install -e .  # Install the local package in development mode
 pip install langchain
 pip install pandas
 pip install matplotlib
 ```
 
+Note: The `openhorizon-agentic-ai` package is installed from the local repository using `pip install -e .`. This installs the package in development mode, allowing you to make changes to the code and have them immediately reflected in your notebooks.
+
 ### 12.2. Basic Notebook Example
+
+Run Jupyter: `jupyter notebook` (File, New, Notebook).
 
 Create a new file `openhorizon_analysis.ipynb` with the following cells:
 
@@ -1201,32 +1205,36 @@ os.environ['HZN_EXCHANGE_USER_AUTH'] = 'your_username:your_password'
 os.environ['HZN_EXCHANGE_URL'] = 'http://localhost:8080/v1'
 
 # Cell 3: Initialize clients and agents
-client = ExchangeAPIClient(
-    base_url=os.getenv('HZN_EXCHANGE_URL'),
-    org=os.getenv('HZN_ORG_ID'),
-    username=os.getenv('HZN_EXCHANGE_USER_AUTH').split(':')[0],
-    password=os.getenv('HZN_EXCHANGE_USER_AUTH').split(':')[1]
-)
+client = ExchangeAPIClient()
 
 service_agent = ServiceManagementAgent(client)
 metrics_collector = MetricsCollector(client)
 
 # Cell 4: Collect and analyze service metrics
-services = client.list_services()
+services = client.get_services()
 metrics_data = []
 
-for service in services:
-    metrics = metrics_collector.collect_service_metrics(service['id'])
-    metrics_data.append({
-        'service_id': service['id'],
-        'cpu_usage': metrics['cpu_usage'],
-        'memory_usage': metrics['memory_usage'],
-        'response_time': metrics['response_time']
-    })
+# Process each service
+for service_id, service_data in services.get('services', {}).items():
+    # Get metrics for the service
+    metrics = client.get_service_metrics(service_id)
+    if metrics:
+        # Extract metrics and add service_id
+        metric_entry = {
+            'service_id': service_id,
+            'cpu_usage': metrics.get('cpu_usage', 0),
+            'memory_usage': metrics.get('memory_usage', 0),
+            'response_time': metrics.get('response_time', 0),
+            'error_rate': metrics.get('error_rate', 0)
+        }
+        metrics_data.append(metric_entry)
 
 # Convert to DataFrame for analysis
 df = pd.DataFrame(metrics_data)
-df.head()
+print("\nMetrics DataFrame:")
+print(df.head())
+print("\nDataFrame Info:")
+print(df.info())
 
 # Cell 5: Visualize metrics
 plt.figure(figsize=(12, 6))
