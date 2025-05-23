@@ -34,14 +34,34 @@ pip install -r requirements.txt
 
 ## Configuration
 
-The client can be configured using environment variables:
+### Environment Variables
+
+The following environment variables are required for the Open Horizon AI Integration Framework:
 
 ```bash
-# Required environment variables
-HZN_ORG_ID=your_org_id
-HZN_EXCHANGE_USER_AUTH=your_username:your_password
-HZN_EXCHANGE_URL=http://your-exchange-url:port/v1
+# Organization and Authentication
+HZN_ORG_ID=examples                    # Your Open Horizon organization ID
+HZN_EXCHANGE_USER_AUTH=username:password  # Authentication in format username:password
+HZN_EXCHANGE_URL=http://open-horizon.lfedge.iol.unh.edu:3090/v1  # Exchange API endpoint
+HZN_FSS_CSSURL=http://open-horizon.lfedge.iol.unh.edu:9443/      # File Sync Service URL
+HZN_AGBOT_URL=http://open-horizon.lfedge.iol.unh.edu:3111        # Agreement Bot URL
+HZN_FDO_SVC_URL=http://open-horizon.lfedge.iol.unh.edu:9008/api  # FDO Service URL
 ```
+
+### Test Configuration
+
+For running the test script (`test_api_calls.py`), create a `config.env` file in the root directory with the following content:
+
+```bash
+# Required for test_api_calls.py
+HZN_ORG_ID=examples
+HZN_EXCHANGE_USER_AUTH=your_username:your_password
+HZN_EXCHANGE_URL=http://open-horizon.lfedge.iol.unh.edu:3090/v1
+```
+
+Replace `your_username` and `your_password` with your actual Open Horizon credentials. The test script uses these credentials to authenticate with the Open Horizon Exchange API and perform various operations like listing services and nodes.
+
+Note: Never commit the `config.env` file to version control as it contains sensitive credentials. It's recommended to add `config.env` to your `.gitignore` file.
 
 ## Usage
 

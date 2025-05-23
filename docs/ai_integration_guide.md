@@ -1,4 +1,4 @@
-# AI Integration Guide: Open Horizon with LangChain, LangFlow, and BeeAI
+# AI Integration Guide: Open Horizon AI Integration Framework
 
 ## Table of Contents
 1. [LangChain Integration](#1-langchain-integration)
@@ -1160,7 +1160,7 @@ if __name__ == "__main__":
    - Backup configurations
    - Test configuration changes
 
-For more detailed information about specific configuration options, refer to the API documentation in `docs/api/`.
+For more detailed information about specific configuration options, refer to the API documentation in [docs/api/mcp_server.md](docs/api/mcp_server.md).
 
 ## 12. Using Agentic AI in Jupyter Notebooks
 
@@ -1453,7 +1453,7 @@ display(dashboard)
    - Use environment variables for sensitive data
    - Implement proper access controls
 
-For more examples and detailed documentation, refer to the API documentation in `docs/api/`.
+For more examples and detailed documentation, refer to the API documentation in [docs/api/README.md](docs/api/README.md).
 
 ## 13. TypeScript MCP Server Integration
 
@@ -1833,4 +1833,4 @@ main().catch(console.error);
    - Test WebSocket communication
    - Test error scenarios
 
-For more detailed information about the MCP server implementation, refer to the API documentation in `docs/api/`. 
+For more detailed information about the MCP server implementation, refer to the API documentation in [docs/api/mcp_server.md](docs/api/mcp_server.md). 
