@@ -13,6 +13,13 @@ This directory contains the OpenAPI/Swagger specifications and documentation for
 - [Open Horizon Exchange API Documentation](https://github.com/open-horizon/exchange-api)
 - [Open Horizon Exchange API Reference](https://github.com/open-horizon/exchange-api/blob/master/README.md)
 
+## Related Documentation
+
+- [Usage Examples](../usage_examples.md)
+- [Configuration Guide](../configuration_guide.md)
+- [Troubleshooting Guide](../troubleshooting_guide.md)
+- [AI Integration Guide](../ai_integration_guide.md)
+
 ## Authentication
 
 The Exchange API uses API key authentication. Each request must include:

@@ -2,6 +2,16 @@
 
 This guide explains how to configure the framework for development and production environments.
 
+For detailed API documentation, see:
+- [Base AI Agent](api/base_agent.md)
+- [Service Management Agent](api/service_agent.md)
+- [Node Management Agent](api/node_agent.md)
+- [Metrics Collector](api/metrics_collector.md)
+- [Service Metrics Collector](api/service_metrics_collector.md)
+- [Node Metrics Collector](api/node_metrics_collector.md)
+
+For usage examples, see the [Usage Examples](usage_examples.md) guide.
+
 ## 1. Environment Variables
 
 Set these variables in your `.env` or environment:
@@ -119,4 +129,8 @@ collector._analysis_window = timedelta(minutes=10)  # Change window on the fly
 - Run your scripts or agents as shown in the usage examples
 
 ---
-For more details, see the API documentation in `docs/api/` and usage examples in `docs/usage_examples.md`. 
+For more details, see:
+- [API Documentation](api/)
+- [Usage Examples](usage_examples.md)
+- [Troubleshooting Guide](troubleshooting_guide.md)
+- [AI Integration Guide](ai_integration_guide.md) 
