@@ -1,5 +1,20 @@
 # AI Integration Guide: Open Horizon with LangChain, LangFlow, and BeeAI
 
+## Table of Contents
+1. [LangChain Integration](#1-langchain-integration)
+2. [LangFlow Integration](#2-langflow-integration)
+3. [BeeAI Integration](#3-beeai-integration)
+4. [Best Practices](#4-best-practices)
+5. [Example Use Cases](#5-example-use-cases)
+6. [MCP Server Integration](#6-mcp-server-integration)
+7. [ACP Protocol Integration](#7-acp-protocol-integration)
+8. [A2A Protocol Integration](#8-a2a-protocol-integration)
+9. [Best Practices for Protocol Integration](#9-best-practices-for-protocol-integration)
+10. [Integration Examples](#10-integration-examples)
+11. [Configuration Documentation](#11-configuration-documentation)
+12. [Using Agentic AI in Jupyter Notebooks](#12-using-agentic-ai-in-jupyter-notebooks)
+13. [TypeScript MCP Server Integration](#13-typescript-mcp-server-integration)
+
 This guide explains how to integrate the Open Horizon AI Integration Framework with popular AI orchestration tools.
 
 ## 1. LangChain Integration
@@ -318,9 +333,9 @@ flow_config = {
 }
 ```
 
-## 5. MCP Server Integration
+## 6. MCP Server Integration
 
-### 5.1. Basic Integration
+### 6.1. Basic Integration
 ```python
 from src.mcp.client import MCPClient
 from src.ai.service_agent import ServiceManagementAgent
@@ -373,9 +388,9 @@ class MCPRealTimeMonitor:
         await self.monitor.execute_action(event.service_id, action)
 ```
 
-## 6. ACP Protocol Integration
+## 7. ACP Protocol Integration
 
-### 6.1. Basic Integration
+### 7.1. Basic Integration
 ```python
 from src.acp.handler import ACPHandler
 from src.ai.agent import BaseAIAgent
@@ -403,7 +418,7 @@ class ACPIntegration:
         return self.acp_handler.format_response('action_result', result)
 ```
 
-### 6.2. Advanced Integration with Protocol Versioning
+### 7.2. Advanced Integration with Protocol Versioning
 ```python
 from src.acp.version import ACPVersionManager
 from src.ai.agent import ServiceManagementAgent
@@ -424,9 +439,9 @@ class ACPVersionedIntegration:
             return handler.format_error('unsupported_message_type')
 ```
 
-## 7. A2A Protocol Integration
+## 8. A2A Protocol Integration
 
-### 7.1. Basic Integration
+### 8.1. Basic Integration
 ```python
 from src.a2a.agent import A2AAgent
 from src.ai.agent import BaseAIAgent
@@ -456,7 +471,7 @@ class A2AIntegration:
             return await self.handle_action_message(message)
 ```
 
-### 7.2. Advanced Integration with Conflict Resolution
+### 8.2. Advanced Integration with Conflict Resolution
 ```python
 from src.a2a.resolver import ConflictResolver
 from src.ai.agent import ServiceManagementAgent
@@ -487,9 +502,9 @@ class A2AConflictResolution:
             )
 ```
 
-## 8. Best Practices for Protocol Integration
+## 9. Best Practices for Protocol Integration
 
-### 8.1. Error Handling and Recovery
+### 9.1. Error Handling and Recovery
 ```python
 from src.common.error import ProtocolError
 from src.common.recovery import RecoveryManager
@@ -506,7 +521,7 @@ class ProtocolErrorHandler:
             return await self.recovery_manager.fail_gracefully(error)
 ```
 
-### 8.2. Security Considerations
+### 9.2. Security Considerations
 ```python
 from src.common.security import SecurityManager
 from src.common.auth import AuthenticationManager
@@ -524,7 +539,7 @@ class ProtocolSecurity:
         return await self.security_manager.encrypt_message(message)
 ```
 
-### 8.3. Performance Optimization
+### 9.3. Performance Optimization
 ```python
 from src.common.performance import PerformanceMonitor
 from src.common.cache import CacheManager
@@ -544,9 +559,9 @@ class ProtocolOptimizer:
         return result
 ```
 
-## 9. Integration Examples
+## 10. Integration Examples
 
-### 9.1. Combined Protocol Usage
+### 10.1. Combined Protocol Usage
 ```python
 from src.integration import ProtocolManager
 
@@ -578,7 +593,7 @@ class MultiProtocolIntegration:
             await self.handle_a2a_event(event)
 ```
 
-### 9.2. Protocol-specific Error Recovery
+### 10.2. Protocol-specific Error Recovery
 ```python
 from src.recovery import ProtocolRecoveryManager
 
@@ -595,19 +610,6 @@ class ProtocolRecovery:
         elif error.protocol == 'a2a':
             return await self.recover_a2a_error(error)
 ```
-
-## 10. Conclusion
-
-This guide has covered the integration of the Open Horizon AI Integration Framework with various protocols and AI orchestration tools. The examples provided demonstrate how to:
-
-1. Integrate with MCP servers for real-time monitoring and control
-2. Implement ACP protocol for standardized agent communication
-3. Use A2A protocol for peer-to-peer agent coordination
-4. Handle errors and implement recovery procedures
-5. Optimize performance and ensure security
-6. Combine multiple protocols for comprehensive service management
-
-For more detailed information about specific components, refer to the API documentation in `docs/api/`.
 
 ## 11. Configuration Documentation
 
@@ -1158,4 +1160,677 @@ if __name__ == "__main__":
    - Backup configurations
    - Test configuration changes
 
-For more detailed information about specific configuration options, refer to the API documentation in `docs/api/`. 
+For more detailed information about specific configuration options, refer to the API documentation in `docs/api/`.
+
+## 12. Using Agentic AI in Jupyter Notebooks
+
+### 12.1. Local Development Setup
+
+First, create a new virtual environment and install the required packages:
+
+```bash
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install required packages
+pip install jupyter
+pip install openhorizon-agentic-ai
+pip install langchain
+pip install pandas
+pip install matplotlib
+```
+
+### 12.2. Basic Notebook Example
+
+Create a new file `openhorizon_analysis.ipynb` with the following cells:
+
+```python
+# Cell 1: Import required modules
+import os
+from src.exchange.client import ExchangeAPIClient
+from src.ai.service_agent import ServiceManagementAgent
+from src.ai.metrics import MetricsCollector
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+# Cell 2: Configure environment variables
+os.environ['HZN_ORG_ID'] = 'examples'
+os.environ['HZN_EXCHANGE_USER_AUTH'] = 'your_username:your_password'
+os.environ['HZN_EXCHANGE_URL'] = 'http://localhost:8080/v1'
+
+# Cell 3: Initialize clients and agents
+client = ExchangeAPIClient(
+    base_url=os.getenv('HZN_EXCHANGE_URL'),
+    org=os.getenv('HZN_ORG_ID'),
+    username=os.getenv('HZN_EXCHANGE_USER_AUTH').split(':')[0],
+    password=os.getenv('HZN_EXCHANGE_USER_AUTH').split(':')[1]
+)
+
+service_agent = ServiceManagementAgent(client)
+metrics_collector = MetricsCollector(client)
+
+# Cell 4: Collect and analyze service metrics
+services = client.list_services()
+metrics_data = []
+
+for service in services:
+    metrics = metrics_collector.collect_service_metrics(service['id'])
+    metrics_data.append({
+        'service_id': service['id'],
+        'cpu_usage': metrics['cpu_usage'],
+        'memory_usage': metrics['memory_usage'],
+        'response_time': metrics['response_time']
+    })
+
+# Convert to DataFrame for analysis
+df = pd.DataFrame(metrics_data)
+df.head()
+
+# Cell 5: Visualize metrics
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+df.boxplot(column=['cpu_usage', 'memory_usage'])
+plt.title('Resource Usage Distribution')
+
+plt.subplot(1, 2, 2)
+plt.scatter(df['cpu_usage'], df['memory_usage'])
+plt.xlabel('CPU Usage (%)')
+plt.ylabel('Memory Usage (%)')
+plt.title('CPU vs Memory Usage')
+plt.show()
+
+# Cell 6: Get AI recommendations
+recommendations = []
+for service in services:
+    analysis = service_agent.analyze_service(service['id'])
+    recommendations.append({
+        'service_id': service['id'],
+        'health_status': analysis['health_status'],
+        'recommendations': analysis['recommendations']
+    })
+
+# Display recommendations
+pd.DataFrame(recommendations)
+```
+
+### 12.3. Advanced Analysis Example
+
+Create another notebook `advanced_analysis.ipynb` for more complex analysis:
+
+```python
+# Cell 1: Import additional modules
+from src.ai.trend_analyzer import TrendAnalyzer
+from src.ai.predictor import ServicePredictor
+import seaborn as sns
+from datetime import datetime, timedelta
+
+# Cell 2: Initialize advanced components
+trend_analyzer = TrendAnalyzer()
+predictor = ServicePredictor()
+
+# Cell 3: Collect historical data
+end_time = datetime.now()
+start_time = end_time - timedelta(days=7)
+historical_data = metrics_collector.collect_historical_metrics(
+    start_time=start_time,
+    end_time=end_time
+)
+
+# Cell 4: Analyze trends
+trends = trend_analyzer.analyze_trends(historical_data)
+trend_df = pd.DataFrame(trends)
+
+# Cell 5: Visualize trends
+plt.figure(figsize=(15, 10))
+
+# CPU Usage Trend
+plt.subplot(2, 2, 1)
+sns.lineplot(data=trend_df, x='timestamp', y='cpu_usage', hue='service_id')
+plt.title('CPU Usage Trend')
+plt.xticks(rotation=45)
+
+# Memory Usage Trend
+plt.subplot(2, 2, 2)
+sns.lineplot(data=trend_df, x='timestamp', y='memory_usage', hue='service_id')
+plt.title('Memory Usage Trend')
+plt.xticks(rotation=45)
+
+# Response Time Trend
+plt.subplot(2, 2, 3)
+sns.lineplot(data=trend_df, x='timestamp', y='response_time', hue='service_id')
+plt.title('Response Time Trend')
+plt.xticks(rotation=45)
+
+# Error Rate Trend
+plt.subplot(2, 2, 4)
+sns.lineplot(data=trend_df, x='timestamp', y='error_rate', hue='service_id')
+plt.title('Error Rate Trend')
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+
+# Cell 6: Make predictions
+predictions = predictor.predict_service_metrics(
+    historical_data=historical_data,
+    prediction_horizon=timedelta(hours=24)
+)
+
+# Cell 7: Visualize predictions
+plt.figure(figsize=(12, 6))
+for service_id in predictions['service_id'].unique():
+    service_data = predictions[predictions['service_id'] == service_id]
+    plt.plot(service_data['timestamp'], service_data['predicted_cpu'], 
+             label=f'Service {service_id} (Predicted)')
+    plt.fill_between(service_data['timestamp'],
+                    service_data['predicted_cpu_lower'],
+                    service_data['predicted_cpu_upper'],
+                    alpha=0.2)
+
+plt.title('CPU Usage Predictions')
+plt.xlabel('Time')
+plt.ylabel('CPU Usage (%)')
+plt.legend()
+plt.show()
+
+# Cell 8: Generate recommendations
+recommendations = service_agent.generate_recommendations(
+    historical_data=historical_data,
+    predictions=predictions
+)
+
+# Display recommendations in a formatted table
+pd.DataFrame(recommendations).style.set_properties(**{
+    'background-color': 'lightyellow',
+    'color': 'black',
+    'border-color': 'black',
+    'border-style': 'solid',
+    'border-width': '1px'
+})
+```
+
+### 12.4. Interactive Dashboard Example
+
+Create a notebook `interactive_dashboard.ipynb` for real-time monitoring:
+
+```python
+# Cell 1: Import interactive components
+import ipywidgets as widgets
+from IPython.display import display, clear_output
+import asyncio
+from datetime import datetime
+
+# Cell 2: Create dashboard widgets
+service_selector = widgets.Dropdown(
+    options=[s['id'] for s in services],
+    description='Service:'
+)
+
+metric_selector = widgets.Dropdown(
+    options=['cpu_usage', 'memory_usage', 'response_time', 'error_rate'],
+    description='Metric:'
+)
+
+time_range = widgets.Dropdown(
+    options=['1h', '6h', '12h', '24h'],
+    description='Time Range:'
+)
+
+update_button = widgets.Button(description='Update Dashboard')
+output = widgets.Output()
+
+# Cell 3: Define update function
+async def update_dashboard(button):
+    with output:
+        clear_output()
+        service_id = service_selector.value
+        metric = metric_selector.value
+        range_hours = int(time_range.value[:-1])
+        
+        # Collect data
+        end_time = datetime.now()
+        start_time = end_time - timedelta(hours=range_hours)
+        data = metrics_collector.collect_historical_metrics(
+            service_id=service_id,
+            start_time=start_time,
+            end_time=end_time
+        )
+        
+        # Create visualization
+        plt.figure(figsize=(12, 6))
+        plt.plot(data['timestamp'], data[metric])
+        plt.title(f'{metric.replace("_", " ").title()} for Service {service_id}')
+        plt.xlabel('Time')
+        plt.ylabel(metric.replace('_', ' ').title())
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.show()
+        
+        # Display current recommendations
+        analysis = service_agent.analyze_service(service_id)
+        print("\nCurrent Recommendations:")
+        for rec in analysis['recommendations']:
+            print(f"- {rec}")
+
+# Cell 4: Set up dashboard
+update_button.on_click(update_dashboard)
+dashboard = widgets.VBox([
+    widgets.HBox([service_selector, metric_selector, time_range]),
+    update_button,
+    output
+])
+
+# Cell 5: Display dashboard
+display(dashboard)
+```
+
+### 12.5. Best Practices for Notebook Development
+
+1. **Environment Management**
+   - Use virtual environments for isolation
+   - Document package versions in requirements.txt
+   - Use environment variables for configuration
+
+2. **Code Organization**
+   - Split complex analysis into multiple notebooks
+   - Use markdown cells for documentation
+   - Create reusable functions for common tasks
+
+3. **Performance Optimization**
+   - Cache expensive computations
+   - Use async/await for I/O operations
+   - Implement proper error handling
+
+4. **Visualization**
+   - Use appropriate chart types
+   - Include proper labels and titles
+   - Add interactive elements when useful
+
+5. **Security**
+   - Never commit credentials to notebooks
+   - Use environment variables for sensitive data
+   - Implement proper access controls
+
+For more examples and detailed documentation, refer to the API documentation in `docs/api/`.
+
+## 13. TypeScript MCP Server Integration
+
+### 13.1. Project Setup
+
+First, create a new TypeScript project and install the required dependencies:
+
+```bash
+# Create new project
+mkdir mcp-agentic-server
+cd mcp-agentic-server
+npm init -y
+
+# Install dependencies
+npm install typescript @types/node ts-node
+npm install express @types/express
+npm install axios
+npm install dotenv
+npm install openhorizon-agentic-ai
+npm install @types/ws ws
+npm install winston
+
+# Initialize TypeScript
+npx tsc --init
+```
+
+### 13.2. Basic MCP Server Implementation
+
+Create the following files:
+
+```typescript
+// src/types/index.ts
+export interface ServiceMetrics {
+  serviceId: string;
+  cpuUsage: number;
+  memoryUsage: number;
+  responseTime: number;
+  errorRate: number;
+  timestamp: Date;
+}
+
+export interface ServiceAnalysis {
+  serviceId: string;
+  healthStatus: 'healthy' | 'warning' | 'critical';
+  recommendations: string[];
+  metrics: ServiceMetrics;
+}
+
+export interface MCPConfig {
+  port: number;
+  exchangeUrl: string;
+  orgId: string;
+  auth: string;
+}
+```
+
+```typescript
+// src/config/config.ts
+import dotenv from 'dotenv';
+import { MCPConfig } from '../types';
+
+dotenv.config();
+
+export const config: MCPConfig = {
+  port: parseInt(process.env.MCP_PORT || '8080'),
+  exchangeUrl: process.env.HZN_EXCHANGE_URL || '',
+  orgId: process.env.HZN_ORG_ID || '',
+  auth: process.env.HZN_EXCHANGE_USER_AUTH || ''
+};
+
+export const validateConfig = (): void => {
+  const required = ['exchangeUrl', 'orgId', 'auth'];
+  const missing = required.filter(key => !config[key as keyof MCPConfig]);
+  
+  if (missing.length > 0) {
+    throw new Error(`Missing required configuration: ${missing.join(', ')}`);
+  }
+};
+```
+
+```typescript
+// src/services/agenticService.ts
+import { ServiceAnalysis, ServiceMetrics } from '../types';
+import { ServiceManagementAgent, MetricsCollector } from 'openhorizon-agentic-ai';
+import { ExchangeAPIClient } from 'openhorizon-agentic-ai';
+import { config } from '../config/config';
+
+export class AgenticService {
+  private client: ExchangeAPIClient;
+  private serviceAgent: ServiceManagementAgent;
+  private metricsCollector: MetricsCollector;
+
+  constructor() {
+    const [username, password] = config.auth.split(':');
+    this.client = new ExchangeAPIClient({
+      baseUrl: config.exchangeUrl,
+      org: config.orgId,
+      username,
+      password
+    });
+    
+    this.serviceAgent = new ServiceManagementAgent(this.client);
+    this.metricsCollector = new MetricsCollector(this.client);
+  }
+
+  async analyzeService(serviceId: string): Promise<ServiceAnalysis> {
+    try {
+      const metrics = await this.metricsCollector.collectServiceMetrics(serviceId);
+      const analysis = await this.serviceAgent.analyzeService(serviceId);
+      
+      return {
+        serviceId,
+        healthStatus: analysis.healthStatus,
+        recommendations: analysis.recommendations,
+        metrics: {
+          serviceId,
+          cpuUsage: metrics.cpuUsage,
+          memoryUsage: metrics.memoryUsage,
+          responseTime: metrics.responseTime,
+          errorRate: metrics.errorRate,
+          timestamp: new Date()
+        }
+      };
+    } catch (error) {
+      console.error(`Error analyzing service ${serviceId}:`, error);
+      throw error;
+    }
+  }
+
+  async getServiceMetrics(serviceId: string): Promise<ServiceMetrics> {
+    try {
+      const metrics = await this.metricsCollector.collectServiceMetrics(serviceId);
+      return {
+        serviceId,
+        ...metrics,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error(`Error getting metrics for service ${serviceId}:`, error);
+      throw error;
+    }
+  }
+}
+```
+
+```typescript
+// src/server.ts
+import express from 'express';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { AgenticService } from './services/agenticService';
+import { config, validateConfig } from './config/config';
+import winston from 'winston';
+
+// Configure logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+
+// Initialize Express app
+const app = express();
+app.use(express.json());
+
+// Initialize Agentic service
+const agenticService = new AgenticService();
+
+// Create HTTP server
+const server = createServer(app);
+
+// Create WebSocket server
+const wss = new WebSocketServer({ server });
+
+// WebSocket connection handler
+wss.on('connection', (ws) => {
+  logger.info('New WebSocket connection established');
+
+  ws.on('message', async (message) => {
+    try {
+      const data = JSON.parse(message.toString());
+      
+      if (data.type === 'analyze_service') {
+        const analysis = await agenticService.analyzeService(data.serviceId);
+        ws.send(JSON.stringify({
+          type: 'analysis_result',
+          data: analysis
+        }));
+      }
+    } catch (error) {
+      logger.error('Error processing WebSocket message:', error);
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Error processing request'
+      }));
+    }
+  });
+});
+
+// REST API endpoints
+app.get('/api/services/:serviceId/analysis', async (req, res) => {
+  try {
+    const analysis = await agenticService.analyzeService(req.params.serviceId);
+    res.json(analysis);
+  } catch (error) {
+    logger.error('Error in /api/services/:serviceId/analysis:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/services/:serviceId/metrics', async (req, res) => {
+  try {
+    const metrics = await agenticService.getServiceMetrics(req.params.serviceId);
+    res.json(metrics);
+  } catch (error) {
+    logger.error('Error in /api/services/:serviceId/metrics:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Start server
+const startServer = async () => {
+  try {
+    validateConfig();
+    server.listen(config.port, () => {
+      logger.info(`MCP server listening on port ${config.port}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
+```
+
+### 13.3. Client Example
+
+Create a TypeScript client to interact with the MCP server:
+
+```typescript
+// src/client/mcpClient.ts
+import WebSocket from 'ws';
+import axios from 'axios';
+import { ServiceAnalysis, ServiceMetrics } from '../types';
+
+export class MCPClient {
+  private ws: WebSocket;
+  private baseUrl: string;
+
+  constructor(serverUrl: string) {
+    this.baseUrl = serverUrl;
+    this.ws = new WebSocket(serverUrl);
+    this.setupWebSocket();
+  }
+
+  private setupWebSocket() {
+    this.ws.on('open', () => {
+      console.log('Connected to MCP server');
+    });
+
+    this.ws.on('message', (data) => {
+      const message = JSON.parse(data.toString());
+      this.handleMessage(message);
+    });
+
+    this.ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+
+    this.ws.on('close', () => {
+      console.log('Disconnected from MCP server');
+    });
+  }
+
+  private handleMessage(message: any) {
+    switch (message.type) {
+      case 'analysis_result':
+        this.handleAnalysisResult(message.data);
+        break;
+      case 'error':
+        console.error('Server error:', message.message);
+        break;
+    }
+  }
+
+  private handleAnalysisResult(analysis: ServiceAnalysis) {
+    console.log('Received service analysis:', analysis);
+    // Implement your analysis handling logic here
+  }
+
+  async requestServiceAnalysis(serviceId: string): Promise<void> {
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: 'analyze_service',
+        serviceId
+      }));
+    } else {
+      throw new Error('WebSocket is not connected');
+    }
+  }
+
+  async getServiceAnalysis(serviceId: string): Promise<ServiceAnalysis> {
+    const response = await axios.get(`${this.baseUrl}/api/services/${serviceId}/analysis`);
+    return response.data;
+  }
+
+  async getServiceMetrics(serviceId: string): Promise<ServiceMetrics> {
+    const response = await axios.get(`${this.baseUrl}/api/services/${serviceId}/metrics`);
+    return response.data;
+  }
+}
+```
+
+### 13.4. Usage Example
+
+```typescript
+// src/example.ts
+import { MCPClient } from './client/mcpClient';
+
+async function main() {
+  const client = new MCPClient('ws://localhost:8080');
+
+  // Request real-time analysis
+  await client.requestServiceAnalysis('service-1');
+
+  // Get analysis via REST API
+  const analysis = await client.getServiceAnalysis('service-1');
+  console.log('Service analysis:', analysis);
+
+  // Get metrics via REST API
+  const metrics = await client.getServiceMetrics('service-1');
+  console.log('Service metrics:', metrics);
+}
+
+main().catch(console.error);
+```
+
+### 13.5. Best Practices
+
+1. **Error Handling**
+   - Implement comprehensive error handling
+   - Use TypeScript's type system for error types
+   - Log errors with appropriate context
+   - Implement retry mechanisms for transient failures
+
+2. **Security**
+   - Use environment variables for sensitive data
+   - Implement proper authentication
+   - Use HTTPS/WSS for production
+   - Validate all input data
+
+3. **Performance**
+   - Implement connection pooling
+   - Use WebSocket for real-time updates
+   - Cache frequently accessed data
+   - Implement rate limiting
+
+4. **Monitoring**
+   - Log important events
+   - Track performance metrics
+   - Monitor WebSocket connections
+   - Implement health checks
+
+5. **Testing**
+   - Write unit tests for business logic
+   - Implement integration tests
+   - Test WebSocket communication
+   - Test error scenarios
+
+For more detailed information about the MCP server implementation, refer to the API documentation in `docs/api/`. 
