@@ -1,4 +1,11 @@
+"""
+Service Management Agent implementation.
+"""
 from typing import Dict, Any, List
+import pandas as pd
+from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent
+from langchain.prompts import StringPromptTemplate
+from langchain.schema import AgentAction, AgentFinish
 from .base import BaseAIAgent
 from .service_metrics import ServiceMetricsCollector
 
@@ -12,8 +19,43 @@ class ServiceManagementAgent(BaseAIAgent):
             client: An instance of ExchangeAPIClient
         """
         super().__init__(client)
-        self._metrics_collector = ServiceMetricsCollector()
+        self._metrics_collector = ServiceMetricsCollector(client)
         self._deployment_history: List[Dict[str, Any]] = []
+        self.tools = self._create_tools()
+        self.agent = self._create_agent()
+    
+    def _create_tools(self) -> List[Tool]:
+        """Create tools for the agent."""
+        return [
+            Tool(
+                name="get_service_metrics",
+                func=self._get_service_metrics,
+                description="Get metrics for a specific service"
+            ),
+            Tool(
+                name="analyze_service_health",
+                func=self._analyze_service_health,
+                description="Analyze the health of a service based on its metrics"
+            )
+        ]
+    
+    def _create_agent(self) -> AgentExecutor:
+        """Create the agent executor."""
+        # This is a placeholder - in a real implementation, you would use a proper LLM
+        return None
+    
+    def _get_service_metrics(self, service_id: str) -> Dict[str, Any]:
+        """Get metrics for a service."""
+        return self._metrics_collector.collect_service_metrics(service_id)
+    
+    def _analyze_service_health(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze service health based on metrics."""
+        return self._metrics_collector.analyze_service_health(metrics)
+    
+    def analyze_service(self, service_id: str) -> Dict[str, Any]:
+        """Analyze a service and provide recommendations."""
+        metrics = self._get_service_metrics(service_id)
+        return self._analyze_service_health(metrics)
     
     async def analyze(self) -> Dict[str, Any]:
         """Analyze service health and make decisions.

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openhorizon-agentic-ai"
+version = "0.1.0"
+description = "Open Horizon AI Integration Framework"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+authors = [
+    { name = "Joseph Pearson" }
+]
+dependencies = [
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "langchain>=0.1.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "jupyter>=1.0.0",
+    "numpy>=1.24.0",
+    "websockets>=12.0",
+    "aiohttp>=3.9.0",
+    "pydantic>=2.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
+    "flake8>=6.0.0"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true 

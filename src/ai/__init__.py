@@ -1,3 +1,6 @@
+"""
+Open Horizon AI Integration package.
+"""
 from .base import BaseAIAgent
 from .service_agent import ServiceManagementAgent
 from .node_agent import NodeManagementAgent
