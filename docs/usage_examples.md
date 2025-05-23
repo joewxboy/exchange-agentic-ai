@@ -2,6 +2,16 @@
 
 This guide provides practical examples for using the core components of the Open Horizon AI Integration Framework, including metrics collectors and AI agents.
 
+For detailed API documentation, see:
+- [Base AI Agent](api/base_agent.md)
+- [Service Management Agent](api/service_agent.md)
+- [Node Management Agent](api/node_agent.md)
+- [Metrics Collector](api/metrics_collector.md)
+- [Service Metrics Collector](api/service_metrics_collector.md)
+- [Node Metrics Collector](api/node_metrics_collector.md)
+
+For configuration details, see the [Configuration Guide](configuration_guide.md).
+
 ## 1. Metrics Collectors
 
 ### 1.1. Basic Metrics Collection
@@ -179,4 +189,8 @@ for alert in analysis['alerts']:
 ```
 
 ---
-For more details, see the API documentation in `docs/api/`. 
+For more details, see:
+- [API Documentation](api/)
+- [Configuration Guide](configuration_guide.md)
+- [Troubleshooting Guide](troubleshooting_guide.md)
+- [AI Integration Guide](ai_integration_guide.md) 

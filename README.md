@@ -2,6 +2,14 @@
 
 A Python client library for interacting with the Open Horizon Exchange API. This library provides a robust interface for managing services and nodes in an Open Horizon deployment.
 
+## Documentation
+
+- [Usage Examples](docs/usage_examples.md)
+- [Configuration Guide](docs/configuration_guide.md)
+- [Troubleshooting Guide](docs/troubleshooting_guide.md)
+- [AI Integration Guide](docs/ai_integration_guide.md)
+- [API Documentation](docs/api/)
+
 ## Features
 
 - Secure credential management
@@ -177,6 +185,14 @@ headers = credential_manager.get_headers()
 
 ## API Reference
 
+For detailed API documentation, see:
+- [Base AI Agent](docs/api/base_agent.md)
+- [Service Management Agent](docs/api/service_agent.md)
+- [Node Management Agent](docs/api/node_agent.md)
+- [Metrics Collector](docs/api/metrics_collector.md)
+- [Service Metrics Collector](docs/api/service_metrics_collector.md)
+- [Node Metrics Collector](docs/api/node_metrics_collector.md)
+
 ### ServiceManager
 
 Manages service-related operations and validation.
@@ -252,7 +268,63 @@ All errors are wrapped in `ExchangeAPIError` exceptions with descriptive message
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Open Horizon project for the Exchange API
+- Contributors and maintainers of this library
+
+## Documentation Index
+
+### Getting Started
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Basic Usage](#basic-usage)
+
+### Core Components
+- [Service Management](#service-management)
+- [Node Management](#node-management)
+- [Credential Management](#credential-management)
+
+### API Reference
+- [ServiceManager](#servicemanager)
+- [NodeManager](#nodemanager)
+- [ExchangeAPIClient](#exchangeapiclient)
+- [CredentialManager](#credentialmanager)
+
+### Detailed Documentation
+- [Usage Examples](docs/usage_examples.md)
+  - Metrics Collectors
+  - AI Agents
+  - Alert Handling
+  - Advanced Usage
+- [Configuration Guide](docs/configuration_guide.md)
+  - Environment Variables
+  - Agent Configuration
+  - Runtime Overrides
+  - Security Best Practices
+- [Troubleshooting Guide](docs/troubleshooting_guide.md)
+  - Common Issues
+  - Debugging Tips
+  - Recovery Procedures
+- [AI Integration Guide](docs/ai_integration_guide.md)
+  - LangChain Integration
+  - LangFlow Integration
+  - BeeAI Integration
+
+### API Documentation
+- [Base AI Agent](docs/api/base_agent.md)
+- [Service Management Agent](docs/api/service_agent.md)
+- [Node Management Agent](docs/api/node_agent.md)
+- [Metrics Collector](docs/api/metrics_collector.md)
+- [Service Metrics Collector](docs/api/service_metrics_collector.md)
+- [Node Metrics Collector](docs/api/node_metrics_collector.md)
+
+### Additional Resources
+- [API Documentation](docs/api/)
+- [Open Horizon Exchange API](https://github.com/open-horizon/exchange-api)
+- [Open Horizon Exchange API Reference](https://github.com/open-horizon/exchange-api/blob/master/README.md)
 
 ## Development Status
 
