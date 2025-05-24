@@ -132,6 +132,11 @@ The Open Horizon AI Integration Framework aims to enhance the management of Open
 18. Provide examples for common troubleshooting scenarios
 19. Document integration with popular AI frameworks
 20. Include best practices for AI orchestration
+21. When working with Open Horizon Exchange API authentication:
+   - The Basic Auth string should be in the format: `{org_id}/{username}:{password}`
+   - Only the username needs URL encoding, not the password
+   - The org_id must be included in the auth string before the username
+   - The format is: `Basic {base64(org_id/username:password)}`
 
 ## Next Steps
 1. **Advanced Features Implementation**

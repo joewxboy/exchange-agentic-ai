@@ -64,12 +64,4 @@ class ExchangeAPIClient:
     
     def get_service(self, service_id: str) -> Dict[str, Any]:
         """Get details for a specific service."""
-        return self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}')
-    
-    def get_service_metrics(self, service_id: str) -> Dict[str, Any]:
-        """Get metrics for a specific service."""
-        return self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}/metrics')
-
-    def get_service_health(self, service_id: str) -> Dict[str, Any]:
-        """Get health status for a specific service."""
-        return self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}/health') 
+        return self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}') 
