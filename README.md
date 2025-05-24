@@ -8,7 +8,12 @@ A Python client library for interacting with the Open Horizon Exchange API. This
 - [Configuration Guide](docs/configuration_guide.md)
 - [Troubleshooting Guide](docs/troubleshooting_guide.md)
 - [AI Integration Guide](docs/ai_integration_guide.md)
-- [API Documentation](docs/api/)
+- [Testing Documentation](docs/testing.md) - Comprehensive guide to the test suites and testing practices
+- [Metrics Schema](docs/metrics_schema.md) - Detailed documentation of metrics data structures and analysis
+- [Metrics Flow](docs/metrics_flow.md) - Visual diagrams of metrics collection and analysis flows
+- [Architecture Overview](docs/architecture.md) - System architecture and component interactions
+- [API Documentation](docs/api.md) - API endpoints and usage examples
+- [Development Guide](docs/development.md) - Setup and development workflow
 
 ## Features
 
