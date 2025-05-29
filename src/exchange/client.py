@@ -7,6 +7,7 @@ import base64
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 from urllib.parse import quote
+import aiohttp
 
 class ExchangeAPIClient:
     """Client for interacting with the Open Horizon Exchange API."""
@@ -37,31 +38,27 @@ class ExchangeAPIClient:
         else:
             raise ValueError("Missing required environment variables: HZN_ORG_ID or HZN_EXCHANGE_USER_AUTH")
     
-    def _make_request(self, method, endpoint, data=None):
+    async def _make_request(self, method, endpoint, data=None):
         """Make an HTTP request to the Exchange API"""
-        url = f"{self.exchange_url}/{endpoint}"
+        url = f"{self.exchange_url.rstrip('/')}/{endpoint.lstrip('/')}"
         try:
             print(f"Making {method} request to: {url}")
             print(f"Headers: {self.headers}")
             
-            response = requests.request(
-                method=method,
-                url=url,
-                headers=self.headers,
-                json=data
-            )
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
+            async with aiohttp.ClientSession() as session:
+                async with session.request(method=method, url=url, headers=self.headers, json=data) as response:
+                    response.raise_for_status()
+                    response_text = await response.text()
+                    print(f"Response text: {response_text}")
+                    return await response.json()
+        except aiohttp.ClientError as e:
             print(f"Error making request to {url}: {str(e)}")
-            if hasattr(e.response, 'text'):
-                print(f"Response text: {e.response.text}")
             return None
 
-    def get_services(self):
+    async def get_services(self):
         """Get all services in the organization"""
-        return self._make_request('GET', f'orgs/{self.org_id}/services')
+        return await self._make_request('GET', f'orgs/{self.org_id}/services')
     
-    def get_service(self, service_id: str) -> Dict[str, Any]:
+    async def get_service(self, service_id: str) -> Dict[str, Any]:
         """Get details for a specific service."""
-        return self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}') 
+        return await self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}') 

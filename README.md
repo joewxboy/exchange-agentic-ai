@@ -25,6 +25,61 @@ A Python client library for interacting with the Open Horizon Exchange API. This
 - Basic authentication support
 - **Service management with validation, search, and version listing**
 - **Node management with registration, status, update, and deletion**
+- **Organization management with permission-based access control**
+- **User management with role-based authorization**
+
+### Organization Management
+
+The library provides comprehensive organization management capabilities:
+
+```python
+# Get all accessible organizations
+organizations = await org_manager.get_organizations()
+
+# Create a new organization
+new_org = await org_manager.create_organization("MyOrg", "My organization")
+
+# Update organization details
+updated_org = await org_manager.update_organization("org_id", "New description")
+
+# Delete an organization
+await org_manager.delete_organization("org_id")
+```
+
+### User Management
+
+User management features include:
+
+```python
+# Create a new user with specific roles
+user = await org_manager.create_user("org_id", "username", ["user", "admin"])
+
+# Get user details
+user_info = await org_manager.get_user("org_id", "username")
+
+# Update user roles
+updated_user = await org_manager.update_user("org_id", "username", ["user"])
+
+# Delete a user
+await org_manager.delete_user("org_id", "username")
+```
+
+### Permission Handling
+
+The library implements a robust permission system:
+
+- **Permission Levels**: USER < ADMIN < SUPER_ADMIN
+- **Role-Based Access Control**: Users can only perform actions based on their roles
+- **Elevated Privileges**: Only SUPER_ADMIN users can create other admin/super_admin users
+- **Clear Error Messages**: Specific permission errors indicate required permissions
+
+```python
+try:
+    # Attempt to create an organization
+    await org_manager.create_organization("NewOrg", "Description")
+except PermissionError as e:
+    print(f"Insufficient permissions: {e.required_permission}")
+```
 
 ## Installation
 

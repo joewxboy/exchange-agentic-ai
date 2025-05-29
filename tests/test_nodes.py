@@ -38,7 +38,37 @@ class TestNodeManager(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self.node_manager.validate_node_data(invalid_data)
         
-        self.assertIn('Missing required field: id', str(context.exception))
+        self.assertIn('Field required', str(context.exception))
+    
+    def test_validate_node_data_invalid_type(self):
+        """Test validation of node data with invalid node type."""
+        invalid_data = self.valid_node_data.copy()
+        invalid_data['nodeType'] = 'invalid_type'
+        
+        with self.assertRaises(ValueError) as context:
+            self.node_manager.validate_node_data(invalid_data)
+        
+        self.assertIn('Invalid node type', str(context.exception))
+    
+    def test_validate_node_data_invalid_services(self):
+        """Test validation of node data with invalid services format."""
+        invalid_data = self.valid_node_data.copy()
+        invalid_data['registeredServices'] = 'not_a_list'
+        
+        with self.assertRaises(ValueError) as context:
+            self.node_manager.validate_node_data(invalid_data)
+        
+        self.assertIn('Input should be a valid list', str(context.exception))
+    
+    def test_validate_node_data_invalid_policy(self):
+        """Test validation of node data with invalid policy format."""
+        invalid_data = self.valid_node_data.copy()
+        invalid_data['policy'] = 'not_a_dict'
+        
+        with self.assertRaises(ValueError) as context:
+            self.node_manager.validate_node_data(invalid_data)
+        
+        self.assertIn('Input should be a valid dictionary', str(context.exception))
     
     def test_register_node(self):
         """Test node registration with validation."""
@@ -55,7 +85,10 @@ class TestNodeManager(unittest.TestCase):
         
         result = self.node_manager.get_node('examples', 'node1')
         
-        self.assertEqual(result, self.valid_node_data)
+        self.assertIsInstance(result, NodeDefinition)
+        self.assertEqual(result.id, self.valid_node_data['id'])
+        self.assertEqual(result.org_id, self.valid_node_data['org_id'])
+        self.assertEqual(result.nodeType, self.valid_node_data['nodeType'])
         self.mock_client.get_node.assert_called_once_with('examples', 'node1')
     
     def test_update_node(self):
@@ -79,6 +112,8 @@ class TestNodeManager(unittest.TestCase):
     def test_get_node_status(self):
         """Test retrieving node status."""
         self.mock_client.get_node.return_value = {
+            'id': 'node1',
+            'org_id': 'examples',
             'lastHeartbeat': datetime.now(),
             'lastUpdated': datetime.now(),
             'registeredServices': [],
@@ -92,6 +127,15 @@ class TestNodeManager(unittest.TestCase):
         self.assertIn('registeredServices', result)
         self.assertIn('policy', result)
         self.mock_client.get_node.assert_called_once_with('examples', 'node1')
+    
+    def test_from_api_response(self):
+        """Test creating NodeDefinition from API response."""
+        node = NodeDefinition.from_api_response(self.valid_node_data)
+        self.assertEqual(node.id, self.valid_node_data['id'])
+        self.assertEqual(node.org_id, self.valid_node_data['org_id'])
+        self.assertEqual(node.nodeType, self.valid_node_data['nodeType'])
+        self.assertEqual(node.registeredServices, self.valid_node_data['registeredServices'])
+        self.assertEqual(node.policy, self.valid_node_data['policy'])
 
 if __name__ == '__main__':
     unittest.main() 
