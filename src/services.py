@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 from typing import Dict, List, Optional
-from dataclasses import dataclass
 from datetime import datetime
+from pydantic import BaseModel, Field, validator
 
-@dataclass
-class ServiceDefinition:
-    """Class for storing service definition data."""
+class ServiceDefinition(BaseModel):
+    """Model for service definition data."""
     owner: str
     label: str
     description: str
@@ -16,15 +15,50 @@ class ServiceDefinition:
     version: str
     arch: str
     sharable: str
-    matchHardware: Dict
-    requiredServices: List[Dict]
-    userInput: List[Dict]
+    matchHardware: Dict = Field(default_factory=dict)
+    requiredServices: List[Dict] = Field(default_factory=list)
+    userInput: List[Dict] = Field(default_factory=list)
     deployment: Dict
     deploymentSignature: str
-    clusterDeployment: str
-    clusterDeploymentSignature: str
-    imageStore: Dict
+    clusterDeployment: Optional[str] = None
+    clusterDeploymentSignature: Optional[str] = None
+    imageStore: Optional[Dict] = Field(default_factory=dict)
     lastUpdated: Optional[datetime] = None
+
+    @validator('version')
+    def validate_version(cls, v):
+        """Validate version format (semantic versioning)."""
+        import re
+        if not re.match(r'^\d+\.\d+\.\d+$', v):
+            raise ValueError(f"Invalid version format: {v}")
+        return v
+
+    @validator('arch')
+    def validate_architecture(cls, v):
+        """Validate architecture."""
+        valid_archs = {'amd64', 'arm64', 'arm', 'ppc64le', 's390x'}
+        if v not in valid_archs:
+            raise ValueError(f"Invalid architecture: {v}")
+        return v
+
+    @validator('sharable')
+    def validate_sharable(cls, v):
+        """Validate sharable value."""
+        if v not in {'singleton', 'multiple'}:
+            raise ValueError(f"Invalid sharable value: {v}")
+        return v
+
+    @validator('deployment')
+    def validate_deployment(cls, v):
+        """Validate deployment format."""
+        if not isinstance(v, dict) or 'services' not in v:
+            raise ValueError("Invalid deployment format: must contain 'services' key")
+        return v
+
+    @classmethod
+    def from_api_response(cls, data: Dict) -> 'ServiceDefinition':
+        """Create a ServiceDefinition instance from API response data."""
+        return cls(**data)
 
 class ServiceManager:
     """Manages service-related operations and validation."""
@@ -35,78 +69,11 @@ class ServiceManager:
     
     def validate_service_data(self, service_data: Dict) -> bool:
         """Validate service data before creation or update."""
-        required_fields = [
-            'owner', 'label', 'description', 'public', 'documentation',
-            'url', 'version', 'arch', 'sharable', 'matchHardware',
-            'requiredServices', 'userInput', 'deployment'
-        ]
-        
-        # Check for required fields
-        for field in required_fields:
-            if field not in service_data:
-                raise ValueError(f"Missing required field: {field}")
-        
-        # Validate version format (semantic versioning)
-        version = service_data['version']
-        if not self._is_valid_version(version):
-            raise ValueError(f"Invalid version format: {version}")
-        
-        # Validate architecture
-        arch = service_data['arch']
-        if not self._is_valid_architecture(arch):
-            raise ValueError(f"Invalid architecture: {arch}")
-        
-        # Validate sharable value
-        sharable = service_data['sharable']
-        if sharable not in ['singleton', 'multiple']:
-            raise ValueError(f"Invalid sharable value: {sharable}")
-        
-        # Validate deployment format
-        deployment = service_data['deployment']
-        if not self._is_valid_deployment(deployment):
-            raise ValueError("Invalid deployment format")
-        
-        return True
-    
-    def _is_valid_version(self, version: str) -> bool:
-        """Check if version string follows semantic versioning."""
         try:
-            parts = version.split('.')
-            if len(parts) != 3:
-                return False
-            for part in parts:
-                if not part.isdigit():
-                    return False
+            ServiceDefinition(**service_data)
             return True
-        except Exception:
-            return False
-    
-    def _is_valid_architecture(self, arch: str) -> bool:
-        """Check if architecture is valid."""
-        valid_archs = ['amd64', 'arm64', 'arm', 'ppc64le', 's390x']
-        return arch in valid_archs
-    
-    def _is_valid_deployment(self, deployment: Dict) -> bool:
-        """Validate deployment configuration."""
-        if not isinstance(deployment, dict):
-            return False
-        
-        # Check for required deployment fields
-        if 'services' not in deployment:
-            return False
-        
-        services = deployment['services']
-        if not isinstance(services, dict):
-            return False
-        
-        # Validate each service configuration
-        for service_name, service_config in services.items():
-            if not isinstance(service_config, dict):
-                return False
-            if 'image' not in service_config:
-                return False
-        
-        return True
+        except Exception as e:
+            raise ValueError(f"Service validation failed: {str(e)}")
     
     def create_service(self, org_id: str, service_data: Dict) -> Dict:
         """Create a new service with validation."""

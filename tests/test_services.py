@@ -33,7 +33,8 @@ class TestServiceManager(unittest.TestCase):
                         'image': 'test-image:latest'
                     }
                 }
-            }
+            },
+            'deploymentSignature': 'test-signature'
         }
     
     def test_validate_service_data_valid(self):
@@ -48,7 +49,7 @@ class TestServiceManager(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self.service_manager.validate_service_data(invalid_data)
         
-        self.assertIn('Missing required field: owner', str(context.exception))
+        self.assertIn('Field required', str(context.exception))
     
     def test_validate_service_data_invalid_version(self):
         """Test validation of service data with invalid version."""
@@ -141,6 +142,15 @@ class TestServiceManager(unittest.TestCase):
         
         versions = self.service_manager.get_service_versions('test-org', 'test-service')
         self.assertEqual(versions, ['1.0.0', '1.1.0', '2.0.0'])
+    
+    def test_from_api_response(self):
+        """Test creating ServiceDefinition from API response."""
+        service = ServiceDefinition.from_api_response(self.valid_service_data)
+        self.assertEqual(service.owner, self.valid_service_data['owner'])
+        self.assertEqual(service.label, self.valid_service_data['label'])
+        self.assertEqual(service.version, self.valid_service_data['version'])
+        self.assertEqual(service.arch, self.valid_service_data['arch'])
+        self.assertEqual(service.sharable, self.valid_service_data['sharable'])
 
 if __name__ == '__main__':
     unittest.main() 
