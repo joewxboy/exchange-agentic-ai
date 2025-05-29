@@ -1,18 +1,24 @@
-from typing import Dict, Any, List
+"""
+Node management agent implementation.
+"""
+from typing import Dict, Any, List, Optional
+from datetime import datetime
+import logging
 from .base import BaseAIAgent
 from .node_metrics import NodeMetricsCollector
 
 class NodeManagementAgent(BaseAIAgent):
     """AI agent for managing Open Horizon nodes."""
     
-    def __init__(self, client):
+    def __init__(self, client, config: Optional[Dict[str, Any]] = None):
         """Initialize the node management agent.
         
         Args:
             client: An instance of ExchangeAPIClient
+            config: Optional configuration dictionary
         """
-        super().__init__(client)
-        self._metrics_collector = NodeMetricsCollector()
+        super().__init__(client, config)
+        self._metrics_collector = NodeMetricsCollector(config)
         self._health_history: List[Dict[str, Any]] = []
     
     async def analyze(self) -> Dict[str, Any]:
@@ -21,57 +27,74 @@ class NodeManagementAgent(BaseAIAgent):
         Returns:
             Dict containing analysis results and recommended actions
         """
-        analysis = {
-            'nodes': {},
-            'recommendations': [],
-            'alerts': []
-        }
-        
-        # Get current nodes
-        nodes = self.client.list_nodes(self.client.credential_manager._credentials.org_id)
-        
-        for node_id, node_data in nodes.get('nodes', {}).items():
-            # Collect metrics for the node
-            metrics = self._collect_node_metrics(node_id, node_data)
-            self._metrics_collector.add_metrics(metrics)
-            
-            # Get recent metrics and analyze
-            recent_metrics = self._metrics_collector.get_recent_metrics()
-            metrics_analysis = self._metrics_collector.analyze_metrics(recent_metrics)
-            
-            # Store node analysis
-            analysis['nodes'][node_id] = {
-                'status': metrics_analysis['status'],
-                'health': metrics_analysis['health'],
-                'metrics': metrics_analysis['statistics'],
-                'trends': metrics_analysis['trends']
+        try:
+            analysis = {
+                'nodes': {},
+                'recommendations': [],
+                'alerts': []
             }
             
-            # Add alerts
-            analysis['alerts'].extend(metrics_analysis['alerts'])
+            # Get current nodes
+            nodes = self.client.list_nodes(self.client.credential_manager._credentials.org_id)
             
-            # Generate recommendations based on analysis
-            if metrics_analysis['status'] == 'offline':
-                analysis['recommendations'].append({
-                    'node_id': node_id,
-                    'action': 'check_health',
-                    'reason': 'Node is offline'
-                })
-            elif metrics_analysis['health'] == 'critical':
-                analysis['recommendations'].append({
-                    'node_id': node_id,
-                    'action': 'update',
-                    'reason': 'Node health is critical'
-                })
-            elif metrics_analysis['health'] == 'warning':
-                if 'disk_usage' in metrics_analysis['trends'] and metrics_analysis['trends']['disk_usage'] == 'increasing':
-                    analysis['recommendations'].append({
+            for node_id, node_data in nodes.get('nodes', {}).items():
+                try:
+                    # Collect metrics for the node
+                    metrics = self._metrics_collector.collect_metrics(node_id, node_data)
+                    metrics_analysis = self._metrics_collector.analyze_metrics(metrics)
+                    
+                    # Store node analysis
+                    analysis['nodes'][node_id] = {
+                        'status': metrics_analysis['status'],
+                        'health': metrics_analysis['health'],
+                        'metrics': metrics_analysis['metrics'],
+                        'trends': metrics_analysis.get('trends', {})
+                    }
+                    
+                    # Add alerts
+                    analysis['alerts'].extend(metrics_analysis['alerts'])
+                    
+                    # Generate recommendations based on analysis
+                    if metrics_analysis['status'] == 'offline':
+                        analysis['recommendations'].append({
+                            'node_id': node_id,
+                            'action': 'check_health',
+                            'reason': 'Node is offline'
+                        })
+                    elif metrics_analysis['health'] == 'critical':
+                        analysis['recommendations'].append({
+                            'node_id': node_id,
+                            'action': 'update',
+                            'reason': 'Node health is critical'
+                        })
+                    elif metrics_analysis['health'] == 'warning':
+                        if 'disk_usage' in metrics_analysis.get('trends', {}) and metrics_analysis['trends']['disk_usage'] == 'increasing':
+                            analysis['recommendations'].append({
+                                'node_id': node_id,
+                                'action': 'cleanup',
+                                'reason': 'Disk usage is increasing'
+                            })
+                            
+                except Exception as e:
+                    self.logger.error(f"Failed to analyze node {node_id}: {str(e)}")
+                    analysis['alerts'].append({
                         'node_id': node_id,
-                        'action': 'cleanup',
-                        'reason': 'Disk usage is increasing'
+                        'type': 'error',
+                        'message': f'Analysis failed: {str(e)}'
                     })
-        
-        return analysis
+            
+            return analysis
+            
+        except Exception as e:
+            self.logger.error(f"Node analysis failed: {str(e)}")
+            return {
+                'nodes': {},
+                'recommendations': [],
+                'alerts': [{
+                    'type': 'error',
+                    'message': f'Analysis failed: {str(e)}'
+                }]
+            }
     
     async def act(self, action: Dict[str, Any]) -> bool:
         """Execute a node management action.
@@ -93,47 +116,12 @@ class NodeManagementAgent(BaseAIAgent):
             elif action_type == 'cleanup':
                 return await self._cleanup_node(node_id)
             else:
-                raise ValueError(f"Unknown action type: {action_type}")
+                self.logger.error(f"Unknown action type: {action_type}")
+                return False
                 
         except Exception as e:
-            self._log_error(f"Action failed: {str(e)}")
+            self.logger.error(f"Action failed: {str(e)}")
             return False
-    
-    def _collect_node_metrics(self, node_id: str, node_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Collect metrics for a node.
-        
-        Args:
-            node_id: ID of the node
-            node_data: Node data from the API
-            
-        Returns:
-            Dictionary containing node metrics
-        """
-        metrics = {
-            'node_id': node_id,
-            'cpu_usage': 0.0,
-            'memory_usage': 0.0,
-            'disk_usage': 0.0,
-            'temperature': 0.0
-        }
-        
-        # Extract metrics from node data
-        if 'status' in node_data:
-            status = node_data['status']
-            if 'resources' in status:
-                resources = status['resources']
-                metrics['cpu_usage'] = resources.get('cpu', 0.0)
-                metrics['memory_usage'] = resources.get('memory', 0.0)
-                metrics['disk_usage'] = resources.get('disk', 0.0)
-            
-            if 'temperature' in status:
-                metrics['temperature'] = status['temperature']
-        
-        # Add any additional metrics from node data
-        if 'metrics' in node_data:
-            metrics.update(node_data['metrics'])
-        
-        return metrics
     
     async def _check_node_health(self, node_id: str) -> bool:
         """Check the health of a node.
@@ -158,7 +146,7 @@ class NodeManagementAgent(BaseAIAgent):
             
             return True
         except Exception as e:
-            self._log_error(f"Health check failed: {str(e)}")
+            self.logger.error(f"Health check failed: {str(e)}")
             return False
     
     async def _update_node(self, node_id: str, update_data: Dict[str, Any]) -> bool:
@@ -186,7 +174,7 @@ class NodeManagementAgent(BaseAIAgent):
             
             return True
         except Exception as e:
-            self._log_error(f"Node update failed: {str(e)}")
+            self.logger.error(f"Node update failed: {str(e)}")
             return False
     
     async def _cleanup_node(self, node_id: str) -> bool:
@@ -208,7 +196,7 @@ class NodeManagementAgent(BaseAIAgent):
                 'status': {
                     'cleanup': {
                         'enabled': True,
-                        'threshold': 80  # Start cleanup at 80% disk usage
+                        'threshold': self.config.get('cleanup_threshold', 80)  # Start cleanup at 80% disk usage
                     }
                 }
             }
@@ -216,17 +204,5 @@ class NodeManagementAgent(BaseAIAgent):
             return await self._update_node(node_id, update_data)
             
         except Exception as e:
-            self._log_error(f"Node cleanup failed: {str(e)}")
-            return False
-    
-    def _log_error(self, error_message: str) -> None:
-        """Log an error message.
-        
-        Args:
-            error_message: Error message to log
-        """
-        self._history.append({
-            'timestamp': self._get_timestamp(),
-            'type': 'error',
-            'message': error_message
-        }) 
+            self.logger.error(f"Node cleanup failed: {str(e)}")
+            return False 

@@ -6847,4 +6847,333 @@ class ServiceManager:
         )
     
     async def get_public_services(self) -> List[ServiceInfo]:
+        """Get all public services."""
+        return await self.get_service_list(
+            ServiceListType.PUBLIC,
+            org=self.client.org_id
+        )
+    
+    async def get_org_services(self) -> List[ServiceInfo]:
+        """Get all services available to the organization."""
+        return await self.get_service_list(
+            ServiceListType.ORGANIZATION,
+            org=self.client.org_id
+        )
+    
+    async def get_node_services(self, node_id: str) -> List[ServiceInfo]:
+        """Get all services running on a specific node."""
+        return await self.get_service_list(
+            ServiceListType.NODE,
+            org=self.client.org_id,
+            node=node_id
+        )
+    
+    def filter_services(self, services: List[ServiceInfo], **filters) -> List[ServiceInfo]:
+        """Filter services based on provided criteria."""
+        filtered = services
+        for key, value in filters.items():
+            filtered = [s for s in filtered if getattr(s, key) == value]
+        return filtered
+    
+    def sort_services(self, services: List[ServiceInfo], key: str, reverse: bool = False) -> List[ServiceInfo]:
+        """Sort services based on the specified key."""
+        return sorted(services, key=lambda x: getattr(x, key), reverse=reverse)
+    
+    async def get_service(self, service_id: str) -> Optional[ServiceInfo]:
+        """Get detailed information about a specific service."""
+        try:
+            response = await self.client._make_request(
+                "GET",
+                f"/orgs/{self.client.org_id}/services/{service_id}"
+            )
+            return ServiceInfo.from_api_response(response)
+        except Exception:
+            return None
+    
+    async def search_services(self, query: str) -> List[ServiceInfo]:
+        """Search for services matching the query string."""
+        services = await self.get_org_services()
+        return [
+            service for service in services
+            if query.lower() in service.name.lower() or
+               query.lower() in service.id.lower() or
+               query.lower() in service.owner.lower()
+        ]
+```
+
+## Current Status / Progress Tracking
+
+✅ Completed:
+1. Implemented all required API endpoints
+2. Created ServiceInfo data model with proper type hints
+3. Implemented ServiceManager with all required functionality
+4. Added comprehensive test suite
+5. Implemented caching mechanism
+6. Added error handling
+7. Added service filtering and sorting
+8. Added service search functionality
+
+## Executor's Feedback or Assistance Requests
+
+The implementation is complete and all tests are passing. The service management functionality now provides:
+1. Comprehensive service discovery
+2. Flexible filtering and sorting
+3. Efficient caching
+4. Robust error handling
+5. Type-safe data models
+
+## Lessons
+
+1. Always use type hints for better code maintainability
+2. Implement comprehensive test coverage
+3. Use dataclasses for data models
+4. Add proper error handling
+5. Implement caching for performance
+6. Use enums for type safety
+7. Add proper documentation
+
+## Next Steps
+
+1. Add pagination support for large result sets
+2. Implement rate limiting
+3. Add more advanced filtering options
+4. Add service dependency tracking
+5. Add service comparison tools
+6. Add service health monitoring
+7. Add service metrics collection
+
+Would you like to proceed with any of these next steps?
+
+## Organization Management Improvements
+
+### Background and Motivation
+The Organization management code needs several improvements to better align with the existing Service and Node management functionality. These improvements include adding caching, metrics collection, validation, and health monitoring systems.
+
+### Key Challenges and Analysis
+1. Maintaining backward compatibility while adding new features
+2. Ensuring proper error handling and validation
+3. Implementing efficient caching strategies
+4. Adding comprehensive metrics collection
+5. Implementing health monitoring for organizations and users
+6. Enhancing documentation and testing
+
+### High-level Task Breakdown
+1. ✅ Add Caching System
+   - Implemented cache with TTL
+   - Added cache invalidation
+   - Added cache hit/miss metrics
+
+2. ✅ Implement Robust Validation
+   - Added validation for organization data
+   - Added validation for user data
+   - Added permission validation
+
+3. ✅ Add Metrics Collection
+   - Added operation metrics
+   - Added response time metrics
+   - Added error metrics
+   - Added cache metrics
+
+4. ✅ Add Health Monitoring
+   - Added organization health checks
+   - Added user health checks
+   - Added health history tracking
+   - Added health summary reporting
+
+5. ⬜ Enhance Documentation
+   - Add API documentation
+   - Add usage examples
+   - Add troubleshooting guide
+
+6. ⬜ Improve Error Handling
+   - Add specific error types
+   - Add error recovery mechanisms
+   - Add error reporting
+
+7. ⬜ Add Organization Health Monitoring
+   - Add service health checks
+   - Add node health checks
+   - Add dependency health checks
+
+8. ⬜ Implement Organization-level Caching
+   - Add organization-wide cache
+   - Add cache synchronization
+   - Add cache cleanup
+
+9. ⬜ Add Organization-level Validation
+   - Add organization-wide validation rules
+   - Add validation caching
+   - Add validation reporting
+
+10. ⬜ Add Organization-level Metrics
+    - Add organization-wide metrics
+    - Add metrics aggregation
+    - Add metrics visualization
+
+## Project Status Board
+- [x] Add Caching System
+- [x] Implement Robust Validation
+- [x] Add Metrics Collection
+- [x] Add Health Monitoring
+- [x] Refactor PermissionLevel as Enum and update all usages
+- [x] All organization management tests passing
+- [ ] Enhance Documentation
+- [ ] Improve Error Handling
+- [ ] Add Organization Health Monitoring
+- [ ] Implement Organization-level Caching
+- [ ] Add Organization-level Validation
+- [ ] Add Organization-level Metrics
+
+## Executor's Feedback or Assistance Requests
+Completed the refactor of PermissionLevel to a Python Enum and updated all related logic and tests. All organization management tests now pass. The permission system is now robust, type-safe, and easier to maintain.
+
+## Lessons
+- Use Python Enum for permission levels to ensure type safety and clarity
+- Update all validation and test logic to use the Enum
+- Always run the full test suite after major refactors
+- Mock responses in tests must match the required model fields
+
+## Next Steps
+1. Enhance documentation for the new health monitoring system
+2. Improve error handling with specific error types
+3. Add organization-level health monitoring features
+
+1. **Advanced Features Implementation**
+   - Begin with machine learning for trend prediction
+   - Implement anomaly detection
+   - Add pattern recognition
+   - Develop correlation analysis
+
+2. **Visualization Development**
+   - Design metrics dashboard
+   - Implement real-time monitoring views
+   - Create alert visualization
+   - Add trend visualization
+
+3. **Optimization Features**
+   - Implement resource optimization
+   - Add auto-scaling capabilities
+   - Develop load balancing
+   - Create predictive maintenance
+
+## Planner's Note
+The project has made excellent progress through Phases 1 and 2. All core functionality is solid, well-tested, and well-documented. The troubleshooting guide and AI integration guide provide comprehensive coverage of common issues and solutions, as well as integration with popular AI frameworks.
+
+The next phase should focus on:
+1. Implementing advanced features, starting with machine learning capabilities
+2. Developing visualization tools for better monitoring and analysis
+3. Adding optimization features for improved performance
+
+Would you like to proceed with implementing advanced features, starting with machine learning for trend prediction?
+
+## Open Horizon Agentic AI Project
+
+## Background and Motivation
+
+This project aims to create a robust Python client library for interacting with the Open Horizon Exchange API. The library provides a secure, efficient, and user-friendly interface for managing services and nodes in an Open Horizon deployment.
+
+## Key Challenges and Analysis
+
+- **Authentication**: ✅ Secure handling of API credentials and session management
+- **URL Construction**: ✅ Ensuring correct API endpoint construction and handling of base URLs
+- **Error Handling**: ✅ Comprehensive error handling for API responses, network issues, and invalid data
+- **Session Management**: ✅ Efficient session handling to minimize API calls and improve performance
+- **Credential Management**: ✅ Secure storage and validation of API credentials
+- **Service Management**: ✅ Basic CRUD operations implemented, needs advanced features
+- **Node Management**: ✅ Basic operations implemented, needs registration support
+- **Pattern Management**: 🔄 Do not implement
+
+## High-level Task Breakdown
+
+1. **Exchange API Client Implementation** ✅
+   - Basic client structure
+   - Authentication handling
+   - URL construction
+   - Error handling
+   - Session management
+
+2. **Credential Management System** ✅
+   - Secure credential storage
+   - Credential validation
+   - Session-based API communication
+
+3. **Service Management Implementation** 🔄
+   - ✅ Basic CRUD operations
+   - ✅ Service validation
+   - ✅ Service search
+   - 🔄 Advanced deployment configuration
+   - 🔄 Service version management
+   - 🔄 Service dependency handling
+
+4. **Node Management Implementation** 🔄
+   - ✅ Node validation
+   - ✅ Node status monitoring
+   - ✅ Node update
+   - ✅ Node deletion
+   - 🔄 Node registration (when API supports it)
+   - 🔄 Node policy management
+   - 🔄 Node health checks
+
+5. **Documentation and Testing** 🔄
+   - ✅ Basic README.md
+   - ✅ Unit tests for core functionality
+   - 🔄 API reference documentation
+   - 🔄 Integration test suite
+   - 🔄 Usage examples and tutorials
+
+## Project Status Board
+- ✅ Exchange API Client Implementation
+- ✅ Credential Management System
+- 🔄 Service Management Implementation
+- 🔄 Node Management Implementation
+- 🔄 Documentation and Testing
+
+## Executor's Feedback or Assistance Requests
+- Node management operations are working but registration is not yet supported by the API
+- Service management needs advanced features for deployment and versioning
+- Pattern management will not be implemented
+- Documentation needs to be expanded with API reference and examples
+
+## Lessons
+- Always validate input data before making API calls
+- Keep documentation up-to-date with each code change
+- Test with real API endpoints to verify functionality
+- Handle JSON responses even for error status codes
+- Use proper authentication header format for Basic Auth
+
+## Next Steps (Prioritized)
+1. Complete Service Management Implementation
+   - Implement advanced deployment configuration
+   - Add service version management
+   - Handle service dependencies
+
+2. Enhance Node Management
+   - Monitor API for node registration support
+   - Implement node policy management
+   - Add node health checks
+
+3. Expand Documentation and Testing
+   - Create comprehensive API reference
+   - Add integration test suite
+   - Develop usage examples and tutorials
+
+## Planner's Note
+The project has made significant progress with core functionality implemented. The next phase should focus on completing the Service Management features, and enhancing Node Management. Documentation and testing should be expanded in parallel with these developments.
+
+## Agentic AI Integration
+
+### Use Cases
+1. **Automated Service Management**
+   - AI agents can monitor service health and performance
+   - Automatically scale services based on demand
+   - Handle service updates and rollbacks
+   - Manage service dependencies
+
+2. **Intelligent Node Management**
+   - AI agents can monitor node health and status
+   - Automatically register new nodes when discovered
+   - Optimize node resource allocation
+   - Handle node failures and recovery
+
+### AI Agent Capabilities
         """Get all public services
