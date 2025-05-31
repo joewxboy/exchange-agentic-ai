@@ -305,4 +305,49 @@ class TestNodeManagementAgent:
         }
         
         result = await agent.register_node(minimal_policy)
-        assert result['status'] == 'success' 
+        assert result['status'] == 'success'
+
+    @pytest.mark.asyncio
+    async def test_delete_node_success(self, agent, mock_client):
+        """Test successful node deletion."""
+        mock_client.delete_node.return_value = {'status': 'success', 'message': 'Node deleted'}
+        result = await agent.delete_node('test-node-id')
+        assert result['status'] == 'success'
+        assert 'message' in result
+
+    @pytest.mark.asyncio
+    async def test_delete_node_not_found(self, agent, mock_client):
+        """Test deletion of a non-existent node."""
+        mock_client.delete_node.side_effect = Exception("Node not found")
+        result = await agent.delete_node('nonexistent-node')
+        assert result['status'] == 'error'
+        assert 'not found' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_delete_node_invalid_id(self, agent):
+        """Test deletion with invalid node_id (missing or not a string)."""
+        # Missing node_id (None)
+        result = await agent.delete_node(None)
+        assert result['status'] == 'error'
+        assert 'node_id' in result['message'].lower()
+        # Not a string
+        result = await agent.delete_node(123)
+        assert result['status'] == 'error'
+        assert 'node_id' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_delete_node_api_error(self, agent, mock_client):
+        """Test API error during node deletion."""
+        mock_client.delete_node.side_effect = Exception("API Error: Internal server error")
+        result = await agent.delete_node('test-node-id')
+        assert result['status'] == 'error'
+        assert 'api' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_delete_node_edge_cases(self, agent, mock_client):
+        """Test edge cases for node deletion (e.g., node with dependencies)."""
+        # Simulate dependency error
+        mock_client.delete_node.side_effect = Exception("Cannot delete node: dependencies exist")
+        result = await agent.delete_node('dependent-node')
+        assert result['status'] == 'error'
+        assert 'dependencies' in result['message'].lower() 
