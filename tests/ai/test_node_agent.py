@@ -2,7 +2,7 @@
 Unit tests for the node management agent implementation.
 """
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime
 from src.ai.node_agent import NodeManagementAgent
 
@@ -14,6 +14,12 @@ class TestNodeManagementAgent:
         """Create a mock ExchangeAPIClient."""
         client = Mock()
         client.credential_manager._credentials.org_id = "test_org"
+        # Patch async methods
+        client.get_node = AsyncMock()
+        client.create_node = AsyncMock()
+        client.delete_node = AsyncMock()
+        client.update_node = AsyncMock()
+        client.list_nodes = AsyncMock()
         return client
     
     @pytest.fixture
@@ -350,4 +356,63 @@ class TestNodeManagementAgent:
         mock_client.delete_node.side_effect = Exception("Cannot delete node: dependencies exist")
         result = await agent.delete_node('dependent-node')
         assert result['status'] == 'error'
-        assert 'dependencies' in result['message'].lower() 
+        assert 'dependencies' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_node_status_success(self, agent, mock_client):
+        """Test successful node status retrieval."""
+        mock_client.get_node.return_value = {
+            'status': 'online',
+            'health': 'good',
+            'metrics': {'cpu': 50, 'memory': 60},
+            'trends': {'cpu': 'stable', 'memory': 'stable'}
+        }
+        result = await agent.get_node_status('test-node-id')
+        assert result['status'] == 'online'
+        assert result['health'] == 'good'
+        assert 'metrics' in result
+        assert 'trends' in result
+
+    @pytest.mark.asyncio
+    async def test_get_node_status_not_found(self, agent, mock_client):
+        """Test status retrieval for a non-existent node."""
+        mock_client.get_node.side_effect = Exception("Node not found")
+        result = await agent.get_node_status('nonexistent-node')
+        assert result['status'] == 'error'
+        assert 'not found' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_node_status_invalid_id(self, agent):
+        """Test status retrieval with invalid node_id (missing or not a string)."""
+        # Missing node_id (None)
+        result = await agent.get_node_status(None)
+        assert result['status'] == 'error'
+        assert 'node_id' in result['message'].lower()
+        # Not a string
+        result = await agent.get_node_status(123)
+        assert result['status'] == 'error'
+        assert 'node_id' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_node_status_api_error(self, agent, mock_client):
+        """Test API error during node status retrieval."""
+        mock_client.get_node.side_effect = Exception("API Error: Internal server error")
+        result = await agent.get_node_status('test-node-id')
+        assert result['status'] == 'error'
+        assert 'api' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_node_status_edge_cases(self, agent, mock_client):
+        """Test edge cases for node status retrieval (e.g., minimal or unusual status data)."""
+        # Simulate minimal status data
+        mock_client.get_node.return_value = {
+            'status': 'online',
+            'health': 'unknown',
+            'metrics': {},
+            'trends': {}
+        }
+        result = await agent.get_node_status('minimal-node')
+        assert result['status'] == 'online'
+        assert result['health'] == 'unknown'
+        assert 'metrics' in result
+        assert 'trends' in result 

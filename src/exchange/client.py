@@ -61,4 +61,8 @@ class ExchangeAPIClient:
     
     async def get_service(self, service_id: str) -> Dict[str, Any]:
         """Get details for a specific service."""
-        return await self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}') 
+        return await self._make_request('GET', f'orgs/{self.org_id}/services/{service_id}')
+
+    async def get_node(self, node_id: str) -> Dict[str, Any]:
+        """Get details for a specific node."""
+        return await self._make_request('GET', f'orgs/{self.org_id}/nodes/{node_id}') 
