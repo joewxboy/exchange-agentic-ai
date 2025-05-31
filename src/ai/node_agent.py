@@ -278,3 +278,54 @@ class NodeManagementAgent(BaseAIAgent):
                 'status': 'error',
                 'message': f'Node registration failed: {str(e)}'
             }
+
+    async def delete_node(self, node_id: str) -> Dict[str, Any]:
+        """Delete a node from the Exchange.
+        Args:
+            node_id: ID of the node to delete
+        Returns:
+            Dict with status and message
+        """
+        if not node_id or not isinstance(node_id, str):
+            return {
+                'status': 'error',
+                'message': 'Validation error: node_id must be a non-empty string.'
+            }
+        try:
+            org_id = self.client.credential_manager._credentials.org_id
+            result = self.client.delete_node(org_id, node_id)
+            if result and result.get('status') == 'success':
+                return {
+                    'status': 'success',
+                    'message': result.get('message', 'Node deleted successfully.')
+                }
+            if result and 'error' in result:
+                return {
+                    'status': 'error',
+                    'message': result['error']
+                }
+            return {
+                'status': 'error',
+                'message': 'Unknown error during node deletion.'
+            }
+        except Exception as e:
+            msg = str(e).lower()
+            if 'not found' in msg:
+                return {
+                    'status': 'error',
+                    'message': f'Node not found: {str(e)}'
+                }
+            if 'api' in msg:
+                return {
+                    'status': 'error',
+                    'message': f'API error: {str(e)}'
+                }
+            if 'dependencies' in msg:
+                return {
+                    'status': 'error',
+                    'message': f'Cannot delete node: dependencies exist. {str(e)}'
+                }
+            return {
+                'status': 'error',
+                'message': f'Node deletion failed: {str(e)}'
+            }
