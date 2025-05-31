@@ -186,4 +186,123 @@ class TestNodeManagementAgent:
         """Test node cleanup with error."""
         mock_client.get_node.side_effect = Exception("Test error")
         result = await agent._cleanup_node('node1')
-        assert result is False 
+        assert result is False
+    
+    @pytest.mark.asyncio
+    async def test_register_node_success(self, agent, mock_client):
+        """Test successful node registration."""
+        node_data = {
+            'name': 'test-node',
+            'nodeType': 'device',
+            'publicKey': 'test-key',
+            'token': 'test-token',
+            'registeredServices': ['service1'],
+            'policy': {'constraints': []}
+        }
+        
+        mock_client.create_node.return_value = {
+            'status': 'success',
+            'node_id': 'test-node-id'
+        }
+        
+        result = await agent.register_node(node_data)
+        assert result['status'] == 'success'
+        assert result['node_id'] == 'test-node-id'
+        assert 'message' in result
+    
+    @pytest.mark.asyncio
+    async def test_register_node_validation(self, agent):
+        """Test node registration with invalid data."""
+        # Test missing required fields
+        invalid_data = {
+            'name': 'test-node'
+            # Missing required fields
+        }
+        
+        result = await agent.register_node(invalid_data)
+        assert result['status'] == 'error'
+        assert 'validation' in result['message'].lower()
+        
+        # Test invalid field types
+        invalid_types = {
+            'name': 123,  # Should be string
+            'nodeType': 'device',
+            'publicKey': 'test-key',
+            'token': 'test-token',
+            'registeredServices': 'not-a-list',  # Should be list
+            'policy': {'constraints': []}
+        }
+        
+        result = await agent.register_node(invalid_types)
+        assert result['status'] == 'error'
+        assert 'validation' in result['message'].lower()
+    
+    @pytest.mark.asyncio
+    async def test_register_node_duplicate(self, agent, mock_client):
+        """Test node registration with duplicate name."""
+        node_data = {
+            'name': 'existing-node',
+            'nodeType': 'device',
+            'publicKey': 'test-key',
+            'token': 'test-token',
+            'registeredServices': ['service1'],
+            'policy': {'constraints': []}
+        }
+        
+        mock_client.create_node.side_effect = Exception("Node already exists")
+        
+        result = await agent.register_node(node_data)
+        assert result['status'] == 'error'
+        assert 'already exists' in result['message'].lower()
+    
+    @pytest.mark.asyncio
+    async def test_register_node_api_error(self, agent, mock_client):
+        """Test node registration with API error."""
+        node_data = {
+            'name': 'test-node',
+            'nodeType': 'device',
+            'publicKey': 'test-key',
+            'token': 'test-token',
+            'registeredServices': ['service1'],
+            'policy': {'constraints': []}
+        }
+        
+        mock_client.create_node.side_effect = Exception("API Error")
+        
+        result = await agent.register_node(node_data)
+        assert result['status'] == 'error'
+        assert 'api' in result['message'].lower()
+    
+    @pytest.mark.asyncio
+    async def test_register_node_edge_cases(self, agent, mock_client):
+        """Test node registration edge cases."""
+        # Test empty service list
+        empty_services = {
+            'name': 'test-node',
+            'nodeType': 'device',
+            'publicKey': 'test-key',
+            'token': 'test-token',
+            'registeredServices': [],
+            'policy': {'constraints': []}
+        }
+        
+        mock_client.create_node.return_value = {
+            'status': 'success',
+            'node_id': 'test-node-id'
+        }
+        
+        result = await agent.register_node(empty_services)
+        assert result['status'] == 'success'
+        
+        # Test minimal policy
+        minimal_policy = {
+            'name': 'test-node',
+            'nodeType': 'device',
+            'publicKey': 'test-key',
+            'token': 'test-token',
+            'registeredServices': ['service1'],
+            'policy': {}
+        }
+        
+        result = await agent.register_node(minimal_policy)
+        assert result['status'] == 'success' 
