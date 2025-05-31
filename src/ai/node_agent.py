@@ -35,7 +35,7 @@ class NodeManagementAgent(BaseAIAgent):
             }
             
             # Get current nodes
-            nodes = self.client.list_nodes(self.client.credential_manager._credentials.org_id)
+            nodes = await self.client.list_nodes(self.client.credential_manager._credentials.org_id)
             
             for node_id, node_data in nodes.get('nodes', {}).items():
                 try:
@@ -134,7 +134,7 @@ class NodeManagementAgent(BaseAIAgent):
         """
         try:
             org_id = self.client.credential_manager._credentials.org_id
-            node_data = self.client.get_node(org_id, node_id)
+            node_data = await self.client.get_node(org_id, node_id)
             
             # Log the health check
             self._health_history.append({
@@ -161,7 +161,7 @@ class NodeManagementAgent(BaseAIAgent):
         """
         try:
             org_id = self.client.credential_manager._credentials.org_id
-            result = self.client.update_node(org_id, node_id, update_data)
+            result = await self.client.update_node(org_id, node_id, update_data)
             
             # Log the update
             self._history.append({
@@ -189,7 +189,7 @@ class NodeManagementAgent(BaseAIAgent):
         try:
             # Get current node data
             org_id = self.client.credential_manager._credentials.org_id
-            node_data = self.client.get_node(org_id, node_id)
+            node_data = await self.client.get_node(org_id, node_id)
             
             # Add cleanup configuration
             update_data = {
@@ -245,7 +245,7 @@ class NodeManagementAgent(BaseAIAgent):
             }
         try:
             org_id = self.client.credential_manager._credentials.org_id
-            result = self.client.create_node(org_id, node_data)
+            result = await self.client.create_node(org_id, node_data)
             if result and result.get('status') == 'success':
                 return {
                     'status': 'success',
@@ -293,7 +293,7 @@ class NodeManagementAgent(BaseAIAgent):
             }
         try:
             org_id = self.client.credential_manager._credentials.org_id
-            result = self.client.delete_node(org_id, node_id)
+            result = await self.client.delete_node(org_id, node_id)
             if result and result.get('status') == 'success':
                 return {
                     'status': 'success',
@@ -329,3 +329,18 @@ class NodeManagementAgent(BaseAIAgent):
                 'status': 'error',
                 'message': f'Node deletion failed: {str(e)}'
             }
+
+    async def get_node_status(self, node_id: str) -> Dict[str, Any]:
+        """Get detailed status information for a specific node."""
+        if not isinstance(node_id, str):
+            return {'status': 'error', 'message': 'node_id must be a string'}
+        try:
+            node_data = await self.client.get_node(node_id)
+            return {
+                'status': node_data.get('status', 'unknown'),
+                'health': node_data.get('health', 'unknown'),
+                'metrics': node_data.get('metrics', {}),
+                'trends': node_data.get('trends', {})
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
