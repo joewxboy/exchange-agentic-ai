@@ -206,3 +206,75 @@ class NodeManagementAgent(BaseAIAgent):
         except Exception as e:
             self.logger.error(f"Node cleanup failed: {str(e)}")
             return False 
+    
+    async def register_node(self, node_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Register a new node in the Exchange.
+        Args:
+            node_data: Dictionary containing node registration data
+        Returns:
+            Dict with status, node_id (if successful), and message
+        """
+        required_fields = ['name', 'nodeType', 'publicKey', 'token', 'registeredServices', 'policy']
+        # Validate required fields
+        for field in required_fields:
+            if field not in node_data:
+                return {
+                    'status': 'error',
+                    'message': f'Validation error: Missing required field: {field}'
+                }
+        # Validate field types
+        if not isinstance(node_data['name'], str) or not isinstance(node_data['nodeType'], str):
+            return {
+                'status': 'error',
+                'message': 'Validation error: name and nodeType must be strings.'
+            }
+        if not isinstance(node_data['publicKey'], str) or not isinstance(node_data['token'], str):
+            return {
+                'status': 'error',
+                'message': 'Validation error: publicKey and token must be strings.'
+            }
+        if not isinstance(node_data['registeredServices'], list):
+            return {
+                'status': 'error',
+                'message': 'Validation error: registeredServices must be a list.'
+            }
+        if not isinstance(node_data['policy'], dict):
+            return {
+                'status': 'error',
+                'message': 'Validation error: policy must be a dictionary.'
+            }
+        try:
+            org_id = self.client.credential_manager._credentials.org_id
+            result = self.client.create_node(org_id, node_data)
+            if result and result.get('status') == 'success':
+                return {
+                    'status': 'success',
+                    'node_id': result.get('node_id'),
+                    'message': 'Node registered successfully.'
+                }
+            # If API returns error details
+            if result and 'error' in result:
+                return {
+                    'status': 'error',
+                    'message': result['error']
+                }
+            return {
+                'status': 'error',
+                'message': 'Unknown error during node registration.'
+            }
+        except Exception as e:
+            msg = str(e).lower()
+            if 'already exists' in msg:
+                return {
+                    'status': 'error',
+                    'message': f'Node already exists: {str(e)}'
+                }
+            if 'api' in msg:
+                return {
+                    'status': 'error',
+                    'message': f'API error: {str(e)}'
+                }
+            return {
+                'status': 'error',
+                'message': f'Node registration failed: {str(e)}'
+            }
