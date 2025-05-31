@@ -20,6 +20,7 @@ class TestNodeManagementAgent:
         client.delete_node = AsyncMock()
         client.update_node = AsyncMock()
         client.list_nodes = AsyncMock()
+        client.get_node_services = AsyncMock()
         return client
     
     @pytest.fixture
@@ -415,4 +416,43 @@ class TestNodeManagementAgent:
         assert result['status'] == 'online'
         assert result['health'] == 'unknown'
         assert 'metrics' in result
-        assert 'trends' in result 
+        assert 'trends' in result
+
+    @pytest.mark.asyncio
+    async def test_get_node_services_success(self, agent, mock_client):
+        """Test successful retrieval of node services."""
+        mock_client.get_node_services.return_value = [
+            {'name': 'service1', 'version': '1.0.0', 'status': 'running'},
+            {'name': 'service2', 'version': '2.0.0', 'status': 'stopped'}
+        ]
+        result = await agent.get_node_services('test-node-id')
+        assert result['status'] == 'success'
+        assert len(result['services']) == 2
+        assert result['services'][0]['name'] == 'service1'
+        assert result['services'][1]['name'] == 'service2'
+
+    @pytest.mark.asyncio
+    async def test_get_node_services_not_found(self, agent, mock_client):
+        """Test retrieval of services for a non-existent node."""
+        mock_client.get_node_services.side_effect = Exception("Node not found")
+        result = await agent.get_node_services('nonexistent-node')
+        assert result['status'] == 'error'
+        assert 'not found' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_node_services_invalid_id(self, agent):
+        """Test retrieval of services with an invalid node_id."""
+        result = await agent.get_node_services(None)
+        assert result['status'] == 'error'
+        assert 'node_id' in result['message'].lower()
+        result = await agent.get_node_services(123)
+        assert result['status'] == 'error'
+        assert 'node_id' in result['message'].lower()
+
+    @pytest.mark.asyncio
+    async def test_get_node_services_api_error(self, agent, mock_client):
+        """Test API error during retrieval of node services."""
+        mock_client.get_node_services.side_effect = Exception("API Error: Internal server error")
+        result = await agent.get_node_services('test-node-id')
+        assert result['status'] == 'error'
+        assert 'api' in result['message'].lower() 

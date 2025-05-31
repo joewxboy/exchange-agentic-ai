@@ -344,3 +344,16 @@ class NodeManagementAgent(BaseAIAgent):
             }
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
+
+    async def get_node_services(self, node_id: str) -> Dict[str, Any]:
+        """Get the list of services running on a specific node."""
+        if not isinstance(node_id, str):
+            return {'status': 'error', 'message': 'node_id must be a string'}
+        try:
+            services = await self.client.get_node_services(node_id)
+            return {
+                'status': 'success',
+                'services': services
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
